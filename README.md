@@ -2,20 +2,20 @@
 
 ---
 
-A high-performance, distributed code execution engine that securely compiles and runs untrusted C++, Java, and Python code in isolated Docker environments.
+A fast and distributed code execution engine that securely runs user-submitted C++, Java, and Python code inside isolated Docker environments.
 
 ---
 
-## Problem Statement
+## The Problem
 
-Executing untrusted, user-submitted code (like on LeetCode or HackerRank) is inherently dangerous. Standard web servers cannot safely compile and run arbitrary code without risking infinite loops, memory leaks, or malicious shell execution. The objective of this project was to build a highly scalable, distributed backend engine that securely sandboxes user code in ephemeral Docker containers, manages high-concurrency request spikes using asynchronous task queues, and returns execution outputs with near-zero overhead.
+Running untrusted code from users (like you see on LeetCode or HackerRank) is pretty risky. A standard web server can't just run arbitrary code safely—you have to worry about infinite loops, memory leaks, or malicious commands. I built this project to solve that. It's a scalable backend that safely sandboxes user code in temporary Docker containers, handles massive traffic spikes using async task queues, and returns the output lightning fast.
 
 ## Core Features
 
-* Polyglot Execution: Securely compiles and executes Java, C++, and Python code.
-* Docker Sandboxing: Every execution is isolated within its own ephemeral Docker container with strict CPU and memory limits.
-* Asynchronous Processing: Utilizes Java `CompletableFuture` and a bounded `ThreadPoolTaskExecutor` to handle concurrent execution requests without blocking the main API thread.
-* High Throughput: Exhaustively benchmarked to sustain 130.64 requests/sec under heavy load.
+* **Multi-Language Support**: Securely compiles and runs Java, C++, and Python code.
+* **Docker Sandboxing**: Every execution happens inside its own temporary Docker container with strict CPU and memory limits.
+* **Async Processing**: Uses Java's `CompletableFuture` and a bounded `ThreadPoolTaskExecutor` to juggle concurrent requests without blocking the main API thread.
+* **High Throughput**: Tested under heavy load to comfortably handle 130.64 requests/sec.
 
 ---
 
@@ -46,19 +46,19 @@ graph TD
 ```
 
 ## Tech Stack
-- Frontend: React, Vite, Monaco Editor, Vanilla CSS (Obsidian & Zinc Design System)
-- Backend: Java 21, Spring Boot, docker-java API
-- Infrastructure: Docker, Docker Compose
-- Performance Tooling: GNU `time` for memory profiling, Async Task Queues
+- **Frontend**: React, Vite, Monaco Editor, Vanilla CSS (Obsidian & Zinc Design System)
+- **Backend**: Java 21, Spring Boot, docker-java API
+- **Infrastructure**: Docker, Docker Compose
+- **Performance Tooling**: GNU `time` for memory profiling, Async Task Queues
 
-## Security & Sandboxing Architecture
+## Security & Sandboxing
 
-Executing untrusted user code natively is a severe Remote Code Execution (RCE) vulnerability. This engine mitigates RCE and ensures 0% resource leakage through a highly restrictive, enterprise-grade Docker sandboxing model.
+Running untrusted user code natively is basically inviting a Remote Code Execution (RCE) attack. This engine prevents that and ensures zero resource leakage through a very strict Docker sandboxing setup:
 
-- Pre-warmed Container Pool: The API orchestrates a fleet of static, "zombie" Docker containers (`openjdk`, `g++`, `python`). Code is injected and executed on-the-fly via `docker exec`. This avoids native execution on the host machine while bypassing slow Docker cold-starts.
-- Strict Resource Limits: Every container is strictly bounded using `HostConfig.withMemory(256MB)` to prevent memory exhaustion or malicious array allocations from triggering the host OOM killer.
-- Network Blackholing: Outbound container network access is entirely disabled (`NetworkMode: "none"`). This completely neutralizes Server-Side Request Forgery (SSRF) and prevents the sandbox from being used in DDoS attacks.
-- Natural Backpressure & Thread Isolation: If massive concurrent traffic hits the API, the unbounded creation of threads is blocked by our custom `ThreadPoolTaskExecutor` (bounded queue + `CallerRunsPolicy`). This acts as an organic shield against CPU thrashing and container leaks.
+- **Pre-warmed Container Pool**: The API keeps a fleet of idle Docker containers (`openjdk`, `g++`, `python`) ready to go. Code is injected and run on-the-fly using `docker exec`. This avoids running anything natively on the host while skipping the slow cold-start times of new containers.
+- **Strict Resource Limits**: Each container is tightly restricted (e.g., `HostConfig.withMemory(256MB)`) so someone can't exhaust the system's memory or crash the host with massive arrays.
+- **Network Blackholing**: Container network access is totally disabled (`NetworkMode: "none"`). This neutralizes Server-Side Request Forgery (SSRF) and stops the sandbox from being used for DDoS attacks.
+- **Natural Backpressure**: If a huge wave of traffic hits the API, our custom thread pool steps in. Instead of spawning endless threads and crashing, the bounded queue and `CallerRunsPolicy` act as a shield, preventing CPU thrashing and container leaks.
 
 ## Quick Start
 
@@ -72,25 +72,25 @@ Bring up the frontend and backend simultaneously using Docker Compose:
 docker-compose up -d --build
 ```
 
-*(Note: The `app` container mounts `/var/run/docker.sock` to seamlessly manage the pre-warmed sandbox containers on your host machine).*
+*(Note: The `app` container mounts `/var/run/docker.sock` so it can seamlessly manage the pre-warmed sandbox containers on your machine).*
 
 ### 3. Usage
-Navigate to `http://localhost:8080` (or your mapped frontend port) to access the Code Editor, select your language, and run code instantly!
+Just navigate to `http://localhost:8080` (or whatever your mapped frontend port is), pick your language in the Code Editor, and run some code!
 
-### 4.  Performance Benchmarks & Stress Testing
+### 4. Performance Benchmarks
 
-CodeEngine was benchmarked against concurrent multi-language execution workloads (`C++`, `Java`, and `Python`) to measure compilation throughput, Docker sandbox latency, and async queue stability.
+CodeEngine was benchmarked against concurrent multi-language workloads (C++, Java, and Python) to see how well it handles compilation throughput, Docker latency, and async queue stability.
 
 | Metric | Measured Value | Benchmark Conditions |
 | :--- | :--- | :--- |
-| Peak Throughput | 130.64 requests / sec | 100 concurrent code execution pipelines |
-| Mean Latency | 70.48 ms | End-to-end sandbox execution & output capture |
-| Execution Success Rate | 100.00% | Zero container crash / OOM under parallel load |
-| Warm Pool Speedup | 12.4x faster | Pre-warmed `docker exec` vs. native cold start |
-| CPU Starvation | 0% thrashing | Bounded queue with `CallerRunsPolicy` backpressure |
+| **Peak Throughput** | 130.64 requests/sec | 100 concurrent code execution pipelines |
+| **Mean Latency** | 70.48 ms | End-to-end sandbox execution & output capture |
+| **Success Rate** | 100.00% | Zero container crashes or out-of-memory errors under parallel load |
+| **Warm Pool Speedup** | 12.4x faster | Pre-warmed `docker exec` vs. native cold start |
+| **CPU Starvation** | 0% thrashing | Bounded queue with `CallerRunsPolicy` backpressure |
 
 #### Run Stress Tests Locally
-You can reproduce these benchmarks using the included Python load-testing script:
+You can reproduce these benchmarks yourself using the included Python load-testing script:
 ```bash
 # Test 100 requests across 20 concurrent workers for all languages
 python3 benchmark.py -c 20 -n 100 --all
