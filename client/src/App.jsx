@@ -38,7 +38,7 @@ function App() {
   const [aiFeedback, setAiFeedback] = useState("");
 
   // Resizing State
-  const [leftWidth, setLeftWidth] = useState(75);
+  const [leftWidth, setLeftWidth] = useState(55);
   const [isDragging, setIsDragging] = useState(false);
 
   useEffect(() => {

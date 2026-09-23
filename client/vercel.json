@@ -1,4 +1,7 @@
 {
   "name": "ai-integration-in-code-engine",
-  "framework": "vite"
+  "framework": "vite",
+  "rewrites": [
+    { "source": "/api/(.*)", "destination": "https://code-engine-api.onrender.com/api/$1" }
+  ]
 }
