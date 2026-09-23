@@ -88,7 +88,7 @@ body {
   padding: 16px 24px 24px 24px;
   box-sizing: border-box;
   gap: 16px;
-  opacity: 0;
+  opacity: 1;
   position: relative;
   z-index: 1;
   overflow: hidden;
