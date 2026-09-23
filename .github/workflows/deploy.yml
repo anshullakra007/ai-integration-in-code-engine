@@ -1,4 +1,4 @@
-name: Deploy to Vercel & Render
+name: CI/CD Pipeline
 
 on:
   push:
@@ -9,29 +9,29 @@ on:
 jobs:
   deploy-frontend:
     runs-on: ubuntu-latest
-    env:
-      VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-      VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
     steps:
-      - uses: actions/checkout@v4
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-      - name: Install Client Dependencies
-        run: npm --prefix client install
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Build Project Artifacts
-        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-      - name: Deploy Project Artifacts to Vercel
-        run: vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }}
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+
+      - name: Deploy to Vercel
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+        run: |
+          cd client
+          npx vercel --prod --token $VERCEL_TOKEN --yes
 
   deploy-backend:
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Render Deploy
+        env:
+          RENDER_TOKEN: ${{ secrets.RENDER_TOKEN }}
         run: |
-          curl -fSL -X POST \
-            -H "Authorization: Bearer ${{ secrets.RENDER_TOKEN }}" \
-            -H "Content-Type: application/json" \
-            -d '{"clearCache": "clear"}' \
-            https://api.render.com/v1/services/srv-d5lm62p4tr6s73c2n7f0/deploys
+          curl -X POST "https://api.render.com/v1/services/srv-d5lm62p4tr6s73c2n7f0/deploys" \
+               -H "Authorization: Bearer $RENDER_TOKEN" \
+               -H "Accept: application/json"
