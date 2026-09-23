@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { askAssistant } from "../utils/gemini";
 import "./AiPanel.css";
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { vscDarkPlus } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 export default function AiPanel({ language, code, isVisible }) {
   const [messages, setMessages] = useState([
@@ -35,7 +31,6 @@ export default function AiPanel({ language, code, isVisible }) {
 
     const context = { language, code };
     
-    // Convert 'user' to 'user' and 'model' to 'model' for gemini history
     const geminiHistory = messages.map(m => ({
       role: m.role,
       content: m.content
@@ -54,6 +49,24 @@ export default function AiPanel({ language, code, isVisible }) {
     }
   };
 
+  const renderMarkdown = (text) => {
+    return text.split('\n').map((line, index) => {
+      if (line.startsWith('### ')) {
+        return <h4 key={index} style={{ color: "var(--text-primary)", marginTop: index === 0 ? "0" : "12px", marginBottom: "8px", fontSize: "1.05rem", fontWeight: "600" }}>{line.replace('### ', '')}</h4>;
+      }
+      if (line.trim() === '') return <br key={index} />;
+      
+      const parts = line.split('`');
+      return (
+        <span key={index} style={{ display: "block", margin: "0 0 8px 0", lineHeight: "1.5" }}>
+          {parts.map((part, i) => 
+            i % 2 === 1 ? <code key={i} style={{ background: "rgba(168, 85, 247, 0.15)", border: "1px solid rgba(168, 85, 247, 0.3)", padding: "2px 4px", borderRadius: "4px", color: "#e879f9", fontFamily: "var(--font-mono)", fontSize: "0.9em" }}>{part}</code> : part
+          )}
+        </span>
+      );
+    });
+  };
+
   if (!isVisible) return null;
 
   return (
@@ -63,29 +76,9 @@ export default function AiPanel({ language, code, isVisible }) {
           <div key={index} className={`ai-message-wrapper ${msg.role}`}>
             <div className={`ai-message ${msg.role}`}>
               {msg.role === 'model' ? (
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  components={{
-                    code({node, inline, className, children, ...props}) {
-                      const match = /language-(\w+)/.exec(className || '')
-                      return !inline && match ? (
-                        <SyntaxHighlighter
-                          children={String(children).replace(/\n$/, '')}
-                          style={vscDarkPlus}
-                          language={match[1]}
-                          PreTag="div"
-                          {...props}
-                        />
-                      ) : (
-                        <code className={className} {...props}>
-                          {children}
-                        </code>
-                      )
-                    }
-                  }}
-                >
-                  {msg.content}
-                </ReactMarkdown>
+                <div style={{ color: "var(--text-secondary)", fontSize: "0.9rem" }}>
+                  {renderMarkdown(msg.content)}
+                </div>
               ) : (
                 msg.content
               )}
