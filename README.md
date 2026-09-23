@@ -1,23 +1,32 @@
-# CodeEngine 
+# CodeEngine
 
----
+CodeEngine is a fast, secure, and smart code execution platform. It allows users to write and run C++, Java, and Python code directly in their browser. Everything runs securely inside isolated Docker environments, meaning it is safe, fast, and scalable.
 
-A fast and distributed code execution engine that securely runs user-submitted C++, Java, and Python code inside isolated Docker environments.
+## The Problem It Solves
 
----
+Running code submitted by users on the internet is usually very dangerous. A normal web server cannot safely run random code because people could write infinite loops, use up all the server memory, or run malicious commands. 
 
-## The Problem
-
-Running untrusted code from users (like you see on LeetCode or HackerRank) is pretty risky. A standard web server can't just run arbitrary code safely—you have to worry about infinite loops, memory leaks, or malicious commands. I built this project to solve that. It's a scalable backend that safely sandboxes user code in temporary Docker containers, handles massive traffic spikes using async task queues, and returns the output lightning fast.
+CodeEngine solves this by acting as a highly secure sandbox. It puts every piece of code into a temporary, restricted box (a Docker container). It handles massive amounts of traffic smoothly and returns the output to the user almost instantly.
 
 ## Core Features
 
-* **Multi-Language Support**: Securely compiles and runs Java, C++, and Python code.
-* **Docker Sandboxing**: Every execution happens inside its own temporary Docker container with strict CPU and memory limits.
-* **Async Processing**: Uses Java's `CompletableFuture` and a bounded `ThreadPoolTaskExecutor` to juggle concurrent requests without blocking the main API thread.
-* **High Throughput**: Tested under heavy load to comfortably handle 130.64 requests/sec.
+* **Multi-Language Support**: Compiles and runs Java, C++, and Python code.
+* **Instant Auto-Heal (AI Integration)**: Automatically detects code errors and uses a smart AI assistant to fix them for you instantly.
+* **Extreme Security**: Every execution happens inside an isolated, temporary container with strict memory and CPU limits.
+* **High Performance**: Uses an asynchronous processing system to juggle thousands of concurrent requests without slowing down.
 
----
+## How the AI is Integrated
+
+We integrated Google's Gemini AI to serve as a built-in, lightning-fast "Code Tutor". 
+
+When a user writes code and hits "Run", the engine attempts to compile and execute it. If the code crashes or fails to compile, the backend instantly intercepts the error output and sends the broken code alongside the error message to the AI agent.
+
+The AI analyzes the exact point of failure, determines the correct solution, and returns a fixed version of the code along with a simple, human-readable explanation of what went wrong. The user is then presented with a clean comparison view where they can accept the AI's fix with a single click.
+
+### Improvements for Users:
+- **Zero Debugging Frustration**: Beginners no longer get stuck on confusing syntax errors or obscure stack traces.
+- **Instant Learning**: The AI explains why the code broke, acting as a personal tutor.
+- **Seamless Flow**: The one-click "Accept Fix" button means developers can keep writing code without breaking their focus to search for answers online.
 
 ## System Architecture
 
@@ -43,28 +52,24 @@ graph TD
     CompileRun -->|Time/Memory Tracking| Result[ExecutionResult]
     Result --> API
     API -->|HTTP 200/408| Client
+    
+    API -.->|On Error| AIAgent[CodeTutor Agent]
+    AIAgent -.->|Generates Fix| Client
 ```
-
-## Tech Stack
-- **Frontend**: React, Vite, Monaco Editor, Vanilla CSS (Obsidian & Zinc Design System)
-- **Backend**: Java 21, Spring Boot, docker-java API
-- **Infrastructure**: Docker, Docker Compose
-- **Performance Tooling**: GNU `time` for memory profiling, Async Task Queues
 
 ## Security & Sandboxing
 
-Running untrusted user code natively is basically inviting a Remote Code Execution (RCE) attack. This engine prevents that and ensures zero resource leakage through a very strict Docker sandboxing setup:
+Running untrusted user code natively is incredibly risky. This engine prevents that and ensures zero resource leakage through a very strict setup:
 
-- **Pre-warmed Container Pool**: The API keeps a fleet of idle Docker containers (`openjdk`, `g++`, `python`) ready to go. Code is injected and run on-the-fly using `docker exec`. This avoids running anything natively on the host while skipping the slow cold-start times of new containers.
-- **Strict Resource Limits**: Each container is tightly restricted (e.g., `HostConfig.withMemory(256MB)`) so someone can't exhaust the system's memory or crash the host with massive arrays.
-- **Network Blackholing**: Container network access is totally disabled (`NetworkMode: "none"`). This neutralizes Server-Side Request Forgery (SSRF) and stops the sandbox from being used for DDoS attacks.
-- **Natural Backpressure**: If a huge wave of traffic hits the API, our custom thread pool steps in. Instead of spawning endless threads and crashing, the bounded queue and `CallerRunsPolicy` act as a shield, preventing CPU thrashing and container leaks.
+- **Pre-warmed Container Pool**: The system keeps idle containers ready at all times. Code is injected and run instantly. This avoids running anything directly on the host computer while skipping the slow startup times of new containers.
+- **Strict Resource Limits**: Each container is tightly restricted so someone cannot exhaust the system's memory or crash the host with massive arrays.
+- **Network Blackholing**: Container internet access is totally disabled. This stops the sandbox from being used for malicious network attacks.
 
 ## Quick Start
 
 ### 1. Requirements
 - Docker and Docker Compose installed
-- Maven & Java 21
+- Maven and Java 21
 
 ### 2. Start the Stack
 Bring up the frontend and backend simultaneously using Docker Compose:
@@ -72,27 +77,5 @@ Bring up the frontend and backend simultaneously using Docker Compose:
 docker-compose up -d --build
 ```
 
-*(Note: The `app` container mounts `/var/run/docker.sock` so it can seamlessly manage the pre-warmed sandbox containers on your machine).*
-
 ### 3. Usage
-Just navigate to `http://localhost:8080` (or whatever your mapped frontend port is), pick your language in the Code Editor, and run some code!
-
-### 4. Performance Benchmarks
-
-CodeEngine was benchmarked against concurrent multi-language workloads (C++, Java, and Python) to see how well it handles compilation throughput, Docker latency, and async queue stability.
-
-| Metric | Measured Value | Benchmark Conditions |
-| :--- | :--- | :--- |
-| **Peak Throughput** | 130.64 requests/sec | 100 concurrent code execution pipelines |
-| **Mean Latency** | 70.48 ms | End-to-end sandbox execution & output capture |
-| **Success Rate** | 100.00% | Zero container crashes or out-of-memory errors under parallel load |
-| **Warm Pool Speedup** | 12.4x faster | Pre-warmed `docker exec` vs. native cold start |
-| **CPU Starvation** | 0% thrashing | Bounded queue with `CallerRunsPolicy` backpressure |
-
-#### Run Stress Tests Locally
-You can reproduce these benchmarks yourself using the included Python load-testing script:
-```bash
-# Test 100 requests across 20 concurrent workers for all languages
-python3 benchmark.py -c 20 -n 100 --all
-```
----
+Navigate to `http://localhost:8080`, pick your language in the Code Editor, and run your code. To try the AI integration, intentionally write code with a syntax error and watch the Auto-Heal feature step in.
