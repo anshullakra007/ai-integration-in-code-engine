@@ -153,8 +153,8 @@ public class DockerSandboxService {
 
     private String[] getCompileCommand(String language, String workDir) {
         return switch (language) {
-            case "cpp" -> new String[]{"g++", "-std=c++17", "-O0", "-Wall", "-o", "solution", "Solution.cpp"};
-            case "java" -> new String[]{"javac", "Main.java"};
+            case "cpp" -> new String[]{"sh", "-c", "cd " + workDir + " && g++ -std=c++17 -O0 -Wall -o solution Solution.cpp"};
+            case "java" -> new String[]{"sh", "-c", "cd " + workDir + " && javac Main.java"};
             default -> null;
         };
     }
@@ -162,9 +162,9 @@ public class DockerSandboxService {
     private String[] getRunCommand(String language, String workDir, boolean hasInput) {
         String inputRedirect = hasInput ? " < input.txt" : "";
         return switch (language) {
-            case "cpp" -> new String[]{"sh", "-c", "/usr/bin/time -v ./solution" + inputRedirect};
-            case "java" -> new String[]{"sh", "-c", "/usr/bin/time -v java Main" + inputRedirect};
-            case "python" -> new String[]{"sh", "-c", "/usr/bin/time -v python3 script.py" + inputRedirect};
+            case "cpp" -> new String[]{"sh", "-c", "cd " + workDir + " && /usr/bin/time -v ./solution" + inputRedirect};
+            case "java" -> new String[]{"sh", "-c", "cd " + workDir + " && /usr/bin/time -v java Main" + inputRedirect};
+            case "python" -> new String[]{"sh", "-c", "cd " + workDir + " && /usr/bin/time -v python3 script.py" + inputRedirect};
             default -> new String[]{"echo", "error"};
         };
     }
