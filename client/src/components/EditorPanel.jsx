@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import Editor from "@monaco-editor/react";
 import { BOILERPLATES } from "../utils/constants";
 
@@ -17,12 +17,29 @@ export default function EditorPanel({
   leftWidth,
 }) {
   const editorRef = useRef(null);
+  const debounceTimer = useRef(null);
+  const [localCode, setLocalCode] = useState(code);
+
+  // Sync global code to local code (e.g. after Auto-Heal or reset)
+  useEffect(() => {
+    setLocalCode(code);
+  }, [code]);
 
   const handleEditorMount = (editor) => {
     editorRef.current = editor;
     editor.onDidChangeCursorPosition(({ position }) => {
       setCursor({ line: position.lineNumber, col: position.column });
     });
+  };
+
+  const handleEditorChange = (value) => {
+    const val = value ?? "";
+    setLocalCode(val);
+    
+    if (debounceTimer.current) clearTimeout(debounceTimer.current);
+    debounceTimer.current = setTimeout(() => {
+      setCode(val);
+    }, 150);
   };
 
   return (
@@ -147,9 +164,9 @@ export default function EditorPanel({
         height="100%"
         language={language === "cpp" ? "cpp" : language}
         theme={theme === "dark" ? "vs-dark" : "light"}
-        value={code}
+        value={localCode}
         onMount={handleEditorMount}
-        onChange={(value) => setCode(value ?? "")}
+        onChange={handleEditorChange}
         options={{
           fontSize,
           lineNumbers: "on",
