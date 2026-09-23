@@ -1,0 +1,1 @@
+Never modify the `NetworkMode: 'none'` or `HostConfig.withMemory()` settings in the Docker configuration. The Docker sandbox must remain strictly isolated. When building new features, all AI agents must respect these security boundaries and never attempt to bypass the pre-warmed container pooling system.
