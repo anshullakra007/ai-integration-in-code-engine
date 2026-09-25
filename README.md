@@ -1,5 +1,8 @@
 # CodeEngine
 
+**🌐 Live Demo:** [https://ai-integration-in-code-engine.vercel.app](https://ai-integration-in-code-engine.vercel.app)
+*(Note: The backend is hosted on Render's free tier, so the first code execution may take 30-50 seconds as the server wakes up).*
+
 CodeEngine is a fast, secure, and smart code execution platform. It allows users to write and run C++, Java, and Python code directly in their browser. Everything runs securely inside isolated Docker environments, meaning it is safe, fast, and scalable.
 
 ## The Problem It Solves
@@ -11,7 +14,7 @@ CodeEngine solves this by acting as a highly secure sandbox. It puts every piece
 ## Core Features
 
 * **Multi-Language Support**: Compiles and runs Java, C++, and Python code.
-* **Instant Auto-Heal (AI Integration)**: Automatically detects code errors and uses a smart AI assistant to fix them for you instantly.
+* **In-Editor AI Assistant**: Get instant logic breakdowns, time complexity optimizations, and error fixes directly inside the editor using the Gemini API.
 * **Extreme Security**: Every execution happens inside an isolated, temporary container with strict memory and CPU limits.
 * **High Performance**: Uses an asynchronous processing system to juggle thousands of concurrent requests without slowing down.
 
@@ -81,4 +84,4 @@ docker-compose up -d --build
 ```
 
 ### 3. Usage
-Navigate to `http://localhost:8080`, pick your language in the Code Editor, and run your code. To try the AI integration, intentionally write code with a syntax error and watch the Auto-Heal feature step in.
+Navigate to `http://localhost:8080`, pick your language in the Code Editor, and run your code. To try the AI integration, click the "AI Assistant" button in the top navigation bar to open the chat drawer. You'll need to enter a free Gemini API key to activate it locally.
