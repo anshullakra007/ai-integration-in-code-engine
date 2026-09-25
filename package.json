@@ -1,4 +1,9 @@
 {
+  "name": "code-engine",
+  "private": true,
+  "scripts": {
+    "build": "cd client && npm install && npm run build"
+  },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0"
   }
