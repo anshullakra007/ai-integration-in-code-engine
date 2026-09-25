@@ -7,12 +7,17 @@ if (API_KEY && API_KEY !== "your_api_key_here") {
   genAI = new GoogleGenerativeAI(API_KEY);
 }
 
-export const getGeminiModel = () => {
+export const getGeminiModel = (customKey) => {
+  if (customKey) {
+    return new GoogleGenerativeAI(customKey).getGenerativeModel({ model: "gemini-1.5-pro" });
+  }
   if (!genAI) {
-    throw new Error("Gemini API key is not configured. Please add VITE_GEMINI_API_KEY to your .env file.");
+    throw new Error("Gemini API key is not configured.");
   }
   return genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 };
+
+export const hasApiKey = () => !!genAI;
 
 export const analyzeError = async (code, language, errorOutput) => {
   try {
@@ -41,9 +46,9 @@ ${errorOutput}
   }
 };
 
-export const askAssistant = async (history, message, context) => {
+export const askAssistant = async (history, message, context, customKey) => {
   try {
-    const model = getGeminiModel();
+    const model = getGeminiModel(customKey);
     const chat = model.startChat({
       history: history.map(h => ({ role: h.role, parts: [{ text: h.content }] })),
     });

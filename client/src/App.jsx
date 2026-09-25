@@ -4,7 +4,7 @@ import ArchitectureStory from "./components/ArchitectureStory";
 import Header from "./components/Header";
 import EditorPanel from "./components/EditorPanel";
 import OutputPanel from "./components/OutputPanel";
-import AutoHealModal from "./components/AutoHealModal";
+import AiPanel from "./components/AiPanel";
 import { BOILERPLATES, LANGUAGE_LABELS } from "./utils/constants";
 import { isErrorStatus } from "./utils/helpers";
 
@@ -28,14 +28,7 @@ function App() {
   const [cursor, setCursor] = useState({ line: 1, col: 1 });
   const [isStoryOpen, setIsStoryOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-
-  // New Features State
-  const [batchResult, setBatchResult] = useState(null);
-  const [isBatchLoading, setIsBatchLoading] = useState(false);
-  const [isAutoHealLoading, setIsAutoHealLoading] = useState(false);
-  const [isHealModalOpen, setIsHealModalOpen] = useState(false);
-  const [healedCode, setHealedCode] = useState("");
-  const [aiFeedback, setAiFeedback] = useState("");
+  const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
 
   // Resizing State
   const [leftWidth, setLeftWidth] = useState(55);
@@ -105,89 +98,7 @@ function App() {
     }
   }, [isLoading, language, code, input]);
 
-  const handleRunEdgeCases = useCallback(async () => {
-    if (isBatchLoading) return;
-    setIsBatchLoading(true);
-    setBatchResult(null);
-    setActivePanel("testcases");
 
-    try {
-      const response = await fetch("/api/submit", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ language, code, input }),
-      });
-
-      const textResponse = await response.text();
-      let result;
-      try {
-        result = JSON.parse(textResponse);
-      } catch (e) {
-        throw new Error(`Server error (${response.status}): ${textResponse || "Empty response from server"}`);
-      }
-
-      if (!response.ok) {
-        throw new Error(result.error || result.message || "Failed to execute batch run.");
-      }
-      
-      setBatchResult(result);
-    } catch (error) {
-      console.error("Batch run failed:", error);
-      setBatchResult({ summary: "Failed to connect to server.", testCaseResults: [], passedTests: 0, totalTests: 0 });
-    } finally {
-      setIsBatchLoading(false);
-    }
-  }, [isBatchLoading, language, code, input]);
-
-  const handleAutoHeal = useCallback(async () => {
-    if (isAutoHealLoading) return;
-    setIsAutoHealLoading(true);
-
-    try {
-      const errorOutput = stats && isErrorStatus(stats.status) ? (output || "") : "";
-      const response = await fetch("/api/code/auto-heal", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ language, code, errorOutput }),
-      });
-
-      const textResponse = await response.text();
-      let result;
-      try {
-        result = JSON.parse(textResponse);
-      } catch (e) {
-        throw new Error(`Server error (${response.status}): ${textResponse || "Empty response from server"}`);
-      }
-      
-      if (!response.ok) {
-        setAiFeedback(`Error: ${result.error || result.message || "Auto-heal failed."}. (Tip: Is your OPENAI_API_KEY valid?)`);
-        setHealedCode(code);
-        setIsHealModalOpen(true);
-        setIsAutoHealLoading(false);
-        return;
-      }
-
-      let newCode = code;
-      let feedback = result.aiFeedback || "Auto-heal completed.";
-      
-      // Attempt to extract the fixed code from the AI feedback.
-      // A common pattern is the AI providing the code in Markdown blocks.
-      const codeMatch = feedback.match(/```(?:\w+)?\n([\s\S]*?)```/);
-      if (codeMatch && codeMatch[1]) {
-        newCode = codeMatch[1].trim();
-        feedback = feedback.replace(/```(?:\w+)?\n([\s\S]*?)```/, "").trim();
-      }
-
-      setHealedCode(newCode);
-      setAiFeedback(feedback);
-      setIsHealModalOpen(true);
-    } catch (error) {
-      console.error("Auto-heal failed:", error);
-      alert("Failed to reach Auto-Heal service.");
-    } finally {
-      setIsAutoHealLoading(false);
-    }
-  }, [isAutoHealLoading, language, code, stats, output]);
 
   useEffect(() => {
     const handleKeyDown = (e) => {
@@ -269,9 +180,8 @@ function App() {
         handleLanguageSelect={handleLanguageSelect}
         isLoading={isLoading}
         handleRun={handleRun}
-        handleRunEdgeCases={handleRunEdgeCases}
-        isBatchLoading={isBatchLoading}
         setIsStoryOpen={setIsStoryOpen}
+        setIsAiPanelOpen={setIsAiPanelOpen}
         theme={theme}
         setTheme={setTheme}
       />
@@ -311,10 +221,28 @@ function App() {
           output={output}
           isLoading={isLoading}
           handleClearOutput={handleClearOutput}
-          batchResult={batchResult}
-          onAutoHeal={handleAutoHeal}
-          isAutoHealLoading={isAutoHealLoading}
         />
+        
+        {isAiPanelOpen && (
+          <div className="ai-drawer" style={{ width: '400px', flexShrink: 0, borderLeft: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', backgroundColor: 'var(--bg-primary)' }}>
+            <div style={{ padding: '12px 16px', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h3 style={{ margin: 0, fontSize: '14px', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ color: 'var(--accent-blue)' }}>
+                  <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+                  <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+                  <line x1="12" y1="22.08" x2="12" y2="12"></line>
+                </svg>
+                AI Assistant
+              </h3>
+              <button onClick={() => setIsAiPanelOpen(false)} style={{ background: 'transparent', border: 'none', cursor: 'pointer', color: 'var(--text-secondary)' }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+              </button>
+            </div>
+            <div style={{ flex: 1, overflow: 'hidden' }}>
+              <AiPanel language={language} code={code} output={output} stats={stats} isVisible={true} />
+            </div>
+          </div>
+        )}
       </div>
 
       <footer className="status-bar">
@@ -340,21 +268,6 @@ function App() {
         isOpen={isStoryOpen}
         onClose={() => setIsStoryOpen(false)}
         selectedLanguage={language}
-      />
-
-      <AutoHealModal
-        isOpen={isHealModalOpen}
-        onClose={() => setIsHealModalOpen(false)}
-        originalCode={code}
-        healedCode={healedCode}
-        language={language}
-        theme={theme}
-        aiFeedback={aiFeedback}
-        onAccept={(newCode) => {
-          setCode(newCode);
-          setStats(null);
-          setOutput("");
-        }}
       />
     </div>
   );

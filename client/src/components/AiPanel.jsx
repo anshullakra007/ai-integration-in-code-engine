@@ -1,13 +1,15 @@
 import React, { useState, useEffect, useRef } from "react";
-import { askAssistant } from "../utils/gemini";
+import { askAssistant, hasApiKey } from "../utils/gemini";
+import { isErrorStatus } from "../utils/helpers";
 import "./AiPanel.css";
 
-export default function AiPanel({ language, code, isVisible }) {
+export default function AiPanel({ language, code, isVisible, output, stats }) {
   const [messages, setMessages] = useState([
     { role: "model", content: "Hi! I am your AI coding assistant. Ask me anything about your code!" }
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [sessionKey, setSessionKey] = useState("");
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
@@ -36,7 +38,38 @@ export default function AiPanel({ language, code, isVisible }) {
       content: m.content
     }));
 
-    const response = await askAssistant(geminiHistory, userMsg, context);
+    const response = await askAssistant(geminiHistory, userMsg, context, sessionKey);
+    
+    setMessages([...newHistory, { role: "model", content: response }]);
+    setIsLoading(false);
+  };
+
+  const handleAction = async (actionType) => {
+    if (isLoading) return;
+    let userMsg = "";
+    if (actionType === "explain") {
+      userMsg = "Can you provide a concise 3-bullet breakdown of the logic in my code?";
+    } else if (actionType === "debug") {
+      if (!stats || !isErrorStatus(stats.status)) {
+        userMsg = "My code hasn't failed execution yet, but can you double check if there are any bugs?";
+      } else {
+        userMsg = `My code failed with this error:\n\`\`\`\n${output}\n\`\`\`\nHow can I fix it?`;
+      }
+    } else if (actionType === "optimize") {
+      userMsg = "Can you provide algorithmic complexity tips (Time & Space complexity hints) for my code?";
+    }
+
+    const newHistory = [...messages, { role: "user", content: userMsg }];
+    setMessages(newHistory);
+    setIsLoading(true);
+
+    const context = { language, code };
+    const geminiHistory = messages.map(m => ({
+      role: m.role,
+      content: m.content
+    }));
+
+    const response = await askAssistant(geminiHistory, userMsg, context, sessionKey);
     
     setMessages([...newHistory, { role: "model", content: response }]);
     setIsLoading(false);
@@ -69,6 +102,27 @@ export default function AiPanel({ language, code, isVisible }) {
 
   if (!isVisible) return null;
 
+  const isKeyAvailable = hasApiKey() || sessionKey;
+
+  if (!isKeyAvailable) {
+    return (
+      <div className="ai-panel" style={{ padding: '24px', textAlign: 'center' }}>
+        <h4 style={{ color: 'var(--text-primary)', marginBottom: '12px' }}>AI Assistant Disabled</h4>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '14px', marginBottom: '16px' }}>
+          Enter a free Gemini API key to activate the in-editor AI assistant.
+        </p>
+        <input 
+          type="password" 
+          value={sessionKey}
+          onChange={(e) => setSessionKey(e.target.value)}
+          placeholder="Paste API Key here..."
+          style={{ width: '100%', padding: '8px', borderRadius: '4px', border: '1px solid var(--border-color)', marginBottom: '12px', background: 'var(--bg-secondary)', color: 'var(--text-primary)' }}
+        />
+        <p style={{ fontSize: '12px', color: 'var(--text-secondary)' }}>Your key is only stored in memory for this session.</p>
+      </div>
+    );
+  }
+
   return (
     <div className="ai-panel">
       <div className="ai-chat-history">
@@ -94,6 +148,13 @@ export default function AiPanel({ language, code, isVisible }) {
         )}
         <div ref={messagesEndRef} />
       </div>
+      
+      <div className="ai-quick-actions" style={{ display: 'flex', gap: '8px', padding: '0 12px 12px 12px', flexWrap: 'wrap' }}>
+        <button className="quick-action-btn" onClick={() => handleAction("explain")} disabled={isLoading}>Explain My Code</button>
+        <button className="quick-action-btn" onClick={() => handleAction("debug")} disabled={isLoading}>Debug Error</button>
+        <button className="quick-action-btn" onClick={() => handleAction("optimize")} disabled={isLoading}>Optimize</button>
+      </div>
+
       <div className="ai-input-area">
         <textarea
           value={input}

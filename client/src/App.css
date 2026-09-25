@@ -77,8 +77,8 @@ body {
   width: 100vw;
   overflow: hidden;
   transition:
-    background-color 0.4s ease,
-    color 0.4s ease;
+    background-color 0.15s ease,
+    color 0.15s ease;
 }
 
 .app-container {
@@ -135,7 +135,7 @@ body {
   display: flex;
   align-items: center;
   gap: 8px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.1s cubic-bezier(0.16, 1, 0.3, 1);
   font-size: 0.9rem;
   font-weight: 600;
   box-shadow: var(--shadow-soft);
@@ -154,7 +154,7 @@ body {
 }
 
 .icon-btn svg, .story-mode-btn svg {
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .story-mode-btn:hover svg {
@@ -326,7 +326,7 @@ body {
   font-weight: 700;
   font-size: 0.95rem;
   cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.15s cubic-bezier(0.16, 1, 0.3, 1);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -340,7 +340,7 @@ body {
 }
 
 .run-btn svg {
-  transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: transform 0.15s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .run-btn:hover:not(:disabled) svg {
@@ -398,14 +398,26 @@ body {
 
 /* The Invisible Magnetic Gutter */
 .resize-gutter {
-  width: 24px;
+  width: 1px;
+  position: relative;
   flex-shrink: 0;
   cursor: col-resize;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.3s ease;
+  transition: background 0.1s ease;
   user-select: none;
+  z-index: 50;
+}
+
+.resize-gutter::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: -12px;
+  right: -12px;
+  z-index: 51;
 }
 
 .gutter-pill {
@@ -413,8 +425,10 @@ body {
   height: 32px;
   background: var(--border-subtle);
   border-radius: 4px;
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  transition: all 0.1s cubic-bezier(0.16, 1, 0.3, 1);
   opacity: 0;
+  position: absolute;
+  z-index: 52;
 }
 
 .resize-gutter:hover .gutter-pill,
@@ -849,3 +863,125 @@ button:active:not(:disabled) {
   transform: scale(0.95);
   transition: transform 0.05s ease !important;
 }
+
+/* --- UNIVERSAL COMPATIBILITY (RESPONSIVENESS) --- */
+
+/* Tablets and Small Laptops */
+@media (max-width: 1024px) {
+  .app-container {
+    padding: 12px;
+  }
+  .lang-btn-text {
+    display: none;
+  }
+  .lang-select-btn {
+    padding: 0 12px;
+  }
+  .story-mode-btn span {
+    display: none;
+  }
+}
+
+/* Mobile Devices and Portrait Tablets */
+@media (max-width: 768px) {
+  body {
+    overflow-y: auto;
+    height: auto;
+  }
+  
+  .app-container {
+    height: auto;
+    min-height: 100vh;
+    overflow: visible;
+  }
+
+  .header {
+    height: auto;
+    padding-bottom: 8px;
+    flex-wrap: wrap;
+    gap: 12px;
+    justify-content: center;
+  }
+
+  .logo {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .controls {
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+
+  .run-btn span {
+    display: none;
+  }
+  
+  .run-btn {
+    padding: 0 16px;
+  }
+
+  .workspace {
+    flex-direction: column;
+    overflow: visible;
+    gap: 16px;
+  }
+
+  .editor-panel, .io-panel {
+    width: 100% !important;
+    height: 50vh !important;
+    min-height: 400px;
+    flex: none;
+  }
+
+  .resize-gutter {
+    display: none; /* Disable horizontal resizing on mobile */
+  }
+
+  .status-bar {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 12px;
+    gap: 8px;
+    justify-content: center;
+    margin-top: auto;
+  }
+}
+
+/* Extra Small Phones */
+@media (max-width: 480px) {
+  .app-container {
+    padding: 8px;
+  }
+
+  .logo-title {
+    font-size: 1.1rem;
+  }
+
+  .editor-tab {
+    font-size: 0.9rem;
+  }
+  
+  .panel-header-row, .io-tabs {
+    padding: 0 12px;
+  }
+
+  .result-metrics {
+    padding: 12px;
+    gap: 8px;
+  }
+  
+  .custom-input, .output-terminal {
+    padding: 12px;
+  }
+
+  .auto-heal-modal {
+    width: 98vw !important;
+    height: 95vh !important;
+  }
+  
+  .modal-content {
+    width: 98vw !important;
+  }
+}
+

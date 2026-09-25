@@ -3,11 +3,9 @@ import React, { useState } from "react";
 export default function Header({
   language,
   handleLanguageSelect,
-  isLoading,
   handleRun,
-  handleRunEdgeCases,
-  isBatchLoading,
   setIsStoryOpen,
+  setIsAiPanelOpen,
   theme,
   setTheme,
 }) {
@@ -124,36 +122,17 @@ export default function Header({
         </button>
 
         <button
-          className="run-btn edge-case-btn btn-magic"
-          onClick={handleRunEdgeCases}
-          disabled={isLoading || isBatchLoading}
-          title="Generate & Run Edge Cases"
+          className="run-btn btn-magic"
+          onClick={() => setIsAiPanelOpen(prev => !prev)}
+          title="Toggle AI Assistant"
           style={{ marginLeft: "8px" }}
         >
-          {isBatchLoading ? (
-            <>
-              <svg className="spinner" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2">
-                <line x1="12" y1="2" x2="12" y2="6" />
-                <line x1="12" y1="18" x2="12" y2="22" />
-                <line x1="4.93" y1="4.93" x2="7.76" y2="7.76" />
-                <line x1="16.24" y1="16.24" x2="19.07" y2="19.07" />
-                <line x1="2" y1="12" x2="6" y2="12" />
-                <line x1="18" y1="12" x2="22" y2="12" />
-                <line x1="4.93" y1="19.07" x2="7.76" y2="16.24" />
-                <line x1="16.24" y1="7.76" x2="19.07" y2="4.93" />
-              </svg>{" "}
-              <span>Running Batch...</span>
-            </>
-          ) : (
-            <>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
-                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
-                <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
-                <line x1="12" y1="22.08" x2="12" y2="12"></line>
-              </svg>{" "}
-              <span>Edge Cases</span>
-            </>
-          )}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path>
+            <polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline>
+            <line x1="12" y1="22.08" x2="12" y2="12"></line>
+          </svg>
+          <span>AI Assistant</span>
         </button>
 
         <button

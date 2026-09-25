@@ -17,16 +17,19 @@ CodeEngine solves this by acting as a highly secure sandbox. It puts every piece
 
 ## How the AI is Integrated
 
-We integrated Google's Gemini AI to serve as a built-in, lightning-fast "Code Tutor". 
+We integrated Google's Gemini AI directly into the client-side frontend to serve as a built-in, lightning-fast "Code Tutor". 
 
-When a user writes code and hits "Run", the engine attempts to compile and execute it. If the code crashes or fails to compile, the backend instantly intercepts the error output and sends the broken code alongside the error message to the AI agent.
+Because the AI panel lives in the React client alongside the Monaco Editor, it can grab your code and the output from the Docker sandbox without adding any backend processing overhead.
 
-The AI analyzes the exact point of failure, determines the correct solution, and returns a fixed version of the code along with a simple, human-readable explanation of what went wrong. The user is then presented with a clean comparison view where they can accept the AI's fix with a single click.
+You have three quick actions available right in the editor:
+- **Explain My Code**: Gets a concise 3-bullet breakdown of the logic in the current file.
+- **Debug Error**: When code execution fails, the client automatically grabs the compiler/runtime error from the terminal output and asks Gemini how to fix it.
+- **Optimize**: Asks Gemini for Big-O algorithmic complexity tips.
 
 ### Improvements for Users:
-- **Zero Debugging Frustration**: Beginners no longer get stuck on confusing syntax errors or obscure stack traces.
-- **Instant Learning**: The AI explains why the code broke, acting as a personal tutor.
-- **Seamless Flow**: The one-click "Accept Fix" button means developers can keep writing code without breaking their focus to search for answers online.
+- **Zero Debugging Frustration**: Beginners no longer get stuck on confusing syntax errors.
+- **Real-Time Learning**: The AI explains logic and optimizations directly in a chat drawer next to your code.
+- **Safe & Simple Architecture**: No complex autonomous agents running on the backend. Just direct, fast, single-turn prompts from the frontend to the Gemini API.
 
 ## System Architecture
 
@@ -53,8 +56,8 @@ graph TD
     Result --> API
     API -->|HTTP 200/408| Client
     
-    API -.->|On Error| AIAgent[CodeTutor Agent]
-    AIAgent -.->|Generates Fix| Client
+    Client -.->|REST API Call| Gemini[Gemini API]
+    Gemini -.->|Explain/Debug/Optimize| Client
 ```
 
 ## Security & Sandboxing

@@ -167,3 +167,27 @@
   20% { opacity: 1; }
   100% { opacity: 0.2; }
 }
+
+.quick-action-btn {
+  background-color: var(--bg-secondary, #f0f0f0);
+  border: 1px solid var(--border-color, #ccc);
+  border-radius: 12px;
+  padding: 6px 12px;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-secondary, #555);
+  transition: all 0.2s;
+}
+
+[data-theme="dark"] .quick-action-btn {
+  background-color: var(--bg-secondary, #2d2d2d);
+  border: 1px solid var(--border-color, #444);
+  color: var(--text-secondary, #aaa);
+}
+
+.quick-action-btn:hover:not(:disabled) {
+  background-color: var(--accent-blue, #0066cc);
+  color: white;
+  border-color: var(--accent-blue, #0066cc);
+}
+
