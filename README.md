@@ -1,8 +1,5 @@
 # CodeEngine
 
-**🌐 Live Demo:** [https://ai-integration-in-code-engine.vercel.app](https://ai-integration-in-code-engine.vercel.app)
-*(Note: The backend is hosted on Render's free tier, so the first code execution may take 30-50 seconds as the server wakes up).*
-
 CodeEngine is a fast, secure, and smart code execution platform. It allows users to write and run C++, Java, and Python code directly in their browser. Everything runs securely inside isolated Docker environments, meaning it is safe, fast, and scalable.
 
 ## The Problem It Solves
