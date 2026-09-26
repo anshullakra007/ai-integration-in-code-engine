@@ -3,6 +3,7 @@ import React, { useState } from "react";
 export default function Header({
   language,
   handleLanguageSelect,
+  isLoading,
   handleRun,
   setIsStoryOpen,
   setIsAiPanelOpen,
