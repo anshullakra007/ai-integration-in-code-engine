@@ -9,12 +9,12 @@ if (API_KEY && API_KEY !== "your_api_key_here") {
 
 export const getGeminiModel = (customKey) => {
   if (customKey) {
-    return new GoogleGenerativeAI(customKey).getGenerativeModel({ model: "gemini-1.5-pro" });
+    return new GoogleGenerativeAI(customKey).getGenerativeModel({ model: "gemini-1.5-flash" });
   }
   if (!genAI) {
     throw new Error("Gemini API key is not configured.");
   }
-  return genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+  return genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 };
 
 export const hasApiKey = () => !!genAI;
