@@ -18,7 +18,6 @@ public class ExecutionResult {
     private long totalTimeMs;
     private Long memoryKb;
     private int exitCode;
-    private String aiFeedback;
 
     public ExecutionResult() {}
 
@@ -53,7 +52,4 @@ public class ExecutionResult {
 
     public int getExitCode() { return exitCode; }
     public void setExitCode(int exitCode) { this.exitCode = exitCode; }
-
-    public String getAiFeedback() { return aiFeedback; }
-    public void setAiFeedback(String aiFeedback) { this.aiFeedback = aiFeedback; }
 }
