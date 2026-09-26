@@ -8,12 +8,10 @@ Running code submitted by users on the internet is usually very dangerous. A nor
 
 CodeEngine solves this by acting as a highly secure sandbox. It puts every piece of code into a temporary, restricted box (a Docker container). It handles massive amounts of traffic smoothly and returns the output to the user almost instantly.
 
-## Core Features
-
-* **Multi-Language Support**: Compiles and runs Java, C++, and Python code.
-* **In-Editor AI Assistant**: Get instant logic breakdowns, time complexity optimizations, and error fixes directly inside the editor using the Gemini API.
-* **Extreme Security**: Every execution happens inside an isolated, temporary container with strict memory and CPU limits.
-* **High Performance**: Uses an asynchronous processing system to juggle thousands of concurrent requests without slowing down.
+## Technical Highlights
+* **AI-Assisted Code Sandboxing**: Engineered a secure execution platform utilizing Spring Boot and React.js, integrating the Gemini API as a client-side pair programmer that injects live terminal output into context for real-time debugging of untrusted code.
+* **Backend Backpressure Architecture**: Implemented a custom ThreadPoolTaskExecutor backed by a bounded task queue and a CallerRunsPolicy, creating a robust backpressure system that prevents backend Thread exhaustion under concurrent execution load.
+* **Resource-Restricted Container Pools**: Maintained a fleet of pre-warmed Docker containers to eliminate cold-start delays, strictly stripping network access and capping memory at 256MB to protect the host machine from malicious payloads.
 
 ## How the AI is Integrated
 
