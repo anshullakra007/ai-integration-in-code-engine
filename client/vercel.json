@@ -1,6 +1,4 @@
 {
-  "version": 2,
-  "outputDirectory": "client/dist",
   "rewrites": [
     { "source": "/api/(.*)", "destination": "https://code-engine-api-v2.onrender.com/api/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
